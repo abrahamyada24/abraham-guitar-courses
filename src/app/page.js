@@ -30,6 +30,14 @@ const STUDENTS_CREDENTIALS = [
     meetings: [
       { id: 1, date: '2025-11-04', material: 'Blues Scale Introduction' },
     ]
+  },
+  { 
+    id: 4, 
+    name: 'Clement', 
+    password: 'clement123', 
+    meetings: [
+      { id: 1, date: '2025-11-06', material: 'Basic Guitar Introduction' },
+    ]
   }
 ];
 
@@ -322,98 +330,100 @@ export default function Page() {  // Changed from PresensiGitar to Page for Next
 
           {/* Daftar Murid dan Jadwal Pertemuan */}
           <div className="space-y-6">
-            {students.map((student) => (
-              <div key={student.id} className={`p-4 sm:p-6 rounded-lg ${darkMode ? 'bg-gray-700' : 'bg-white'} shadow-md`}>
-                <div className="flex justify-between items-center mb-4">
-                  <h2 className={`text-xl font-semibold ${darkMode ? 'text-gray-200' : 'text-gray-800'}`}>
-                    {student.name}
-                  </h2>
+            {students
+              .filter(student => currentUser.role === 'teacher' || student.id === currentUser.id)
+              .map((student) => (
+                <div key={student.id} className={`p-4 sm:p-6 rounded-lg ${darkMode ? 'bg-gray-700' : 'bg-white'} shadow-md`}>
+                  <div className="flex justify-between items-center mb-4">
+                    <h2 className={`text-xl font-semibold ${darkMode ? 'text-gray-200' : 'text-gray-800'}`}>
+                      {student.name}
+                    </h2>
+                    {currentUser.role === 'teacher' && (
+                      <button
+                        onClick={() => deleteStudent(student.id)}
+                        className="bg-red-500 text-white px-3 py-1 rounded-lg hover:bg-red-600 flex items-center gap-1"
+                      >
+                        <Trash2 size={16} /> Hapus
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Daftar Pertemuan untuk Murid */}
+                  <h3 className={`font-medium mb-3 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                    Jadwal Pertemuan:
+                  </h3>
+                  {(student.meetings || []).length === 0 ? (
+                    <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                      Belum ada jadwal pertemuan.
+                    </p>
+                  ) : (
+                    <ul className="space-y-3">
+                      {(student.meetings || []).map((meeting) => (
+                        <li
+                          key={meeting.id}
+                          className={`flex justify-between items-center p-3 rounded-lg ${darkMode ? 'bg-gray-600' : 'bg-gray-50'}`}
+                        >
+                          <div>
+                            <p className={`font-medium ${darkMode ? 'text-gray-200' : 'text-gray-800'}`}>
+                              Pertemuan {meeting.id}: {meeting.material}
+                            </p>
+                            <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                              {formatDate(meeting.date)}
+                            </p>
+                          </div>
+                          {currentUser.role === 'teacher' && (
+                            <button
+                              onClick={() => deleteMeeting(student.id, meeting.id)}
+                              className="text-red-500 hover:text-red-700"
+                            >
+                              <Trash2 size={18} />
+                            </button>
+                          )}
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+
+                  {/* Form untuk menambah pertemuan baru (hanya untuk guru) */}
                   {currentUser.role === 'teacher' && (
-                    <button
-                      onClick={() => deleteStudent(student.id)}
-                      className="bg-red-500 text-white px-3 py-1 rounded-lg hover:bg-red-600 flex items-center gap-1"
-                    >
-                      <Trash2 size={16} /> Hapus
-                    </button>
+                    <div className="mt-4">
+                      <h3 className={`font-medium mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                        Tambah Pertemuan Baru
+                      </h3>
+                      <div className="flex flex-col sm:flex-row gap-2">
+                        <input
+                          type="date"
+                          id={`date-${student.id}`}
+                          className={`px-4 py-2 rounded-lg border ${darkMode ? 'bg-gray-600 border-gray-500 text-white' : 'bg-white border-gray-300'}`}
+                        />
+                        <input
+                          type="text"
+                          id={`material-${student.id}`}
+                          placeholder="Materi Pertemuan"
+                          className={`px-4 py-2 rounded-lg border flex-1 ${darkMode ? 'bg-gray-600 border-gray-500 text-white' : 'bg-white border-gray-300'}`}
+                        />
+                        <button
+                          onClick={() => {
+                            const dateInput = document.getElementById(`date-${student.id}`);
+                            const materialInput = document.getElementById(`material-${student.id}`);
+                            if (dateInput.value && materialInput.value) {
+                              addMeeting(student.id, {
+                                date: dateInput.value,
+                                material: materialInput.value
+                              });
+                              dateInput.value = "";
+                              materialInput.value = "";
+                            }
+                          }}
+                          className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 flex items-center gap-2"
+                        >
+                          <Plus size={18} /> Tambah
+                        </button>
+                      </div>
+                    </div>
                   )}
                 </div>
-
-                {/* Daftar Pertemuan untuk Murid */}
-                <h3 className={`font-medium mb-3 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                  Jadwal Pertemuan:
-                </h3>
-                {(student.meetings || []).length === 0 ? (
-                  <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                    Belum ada jadwal pertemuan.
-                  </p>
-                ) : (
-                  <ul className="space-y-3">
-                    {(student.meetings || []).map((meeting) => (
-                      <li
-                        key={meeting.id}
-                        className={`flex justify-between items-center p-3 rounded-lg ${darkMode ? 'bg-gray-600' : 'bg-gray-50'}`}
-                      >
-                        <div>
-                          <p className={`font-medium ${darkMode ? 'text-gray-200' : 'text-gray-800'}`}>
-                            Pertemuan {meeting.id}: {meeting.material}
-                          </p>
-                          <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                            {formatDate(meeting.date)}
-                          </p>
-                        </div>
-                        {currentUser.role === 'teacher' && (
-                          <button
-                            onClick={() => deleteMeeting(student.id, meeting.id)}
-                            className="text-red-500 hover:text-red-700"
-                          >
-                            <Trash2 size={18} />
-                          </button>
-                        )}
-                      </li>
-                    ))}
-                  </ul>
-                )}
-
-                {/* Form untuk menambah pertemuan baru (hanya untuk guru) */}
-                {currentUser.role === 'teacher' && (
-                  <div className="mt-4">
-                    <h3 className={`font-medium mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                      Tambah Pertemuan Baru
-                    </h3>
-                    <div className="flex flex-col sm:flex-row gap-2">
-                      <input
-                        type="date"
-                        id={`date-${student.id}`}
-                        className={`px-4 py-2 rounded-lg border ${darkMode ? 'bg-gray-600 border-gray-500 text-white' : 'bg-white border-gray-300'}`}
-                      />
-                      <input
-                        type="text"
-                        id={`material-${student.id}`}
-                        placeholder="Materi Pertemuan"
-                        className={`px-4 py-2 rounded-lg border flex-1 ${darkMode ? 'bg-gray-600 border-gray-500 text-white' : 'bg-white border-gray-300'}`}
-                      />
-                      <button
-                        onClick={() => {
-                          const dateInput = document.getElementById(`date-${student.id}`);
-                          const materialInput = document.getElementById(`material-${student.id}`);
-                          if (dateInput.value && materialInput.value) {
-                            addMeeting(student.id, {
-                              date: dateInput.value,
-                              material: materialInput.value
-                            });
-                            dateInput.value = "";
-                            materialInput.value = "";
-                          }
-                        }}
-                        className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 flex items-center gap-2"
-                      >
-                        <Plus size={18} /> Tambah
-                      </button>
-                    </div>
-                  </div>
-                )}
-              </div>
-            ))}
+              ))}
           </div>
         </div>
       </div>
