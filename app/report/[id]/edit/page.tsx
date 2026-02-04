@@ -14,6 +14,8 @@ import Link from "next/link"
 import { notFound } from "next/navigation"
 import { ArrowLeft, Check, X } from "lucide-react"
 
+export const dynamic = 'force-dynamic'
+
 async function getReport(id: string) {
     return await prisma.report.findUnique({
         where: { id },

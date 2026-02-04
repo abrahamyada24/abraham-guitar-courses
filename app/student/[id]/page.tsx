@@ -15,6 +15,8 @@ import {
 } from "@/components/ui/table"
 import { ShareButton } from "@/components/ShareButton"
 
+export const dynamic = 'force-dynamic'
+
 export default async function StudentPage({ params }: { params: { id: string } }) { // Assumes Next.js 14-ish behavior or handled by generic
     const id = params.id
     const student = await getStudent(id)

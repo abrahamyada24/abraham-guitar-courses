@@ -2,6 +2,8 @@ import { prisma } from "@/lib/prisma"
 import { notFound } from "next/navigation"
 import { Check } from "lucide-react"
 
+export const dynamic = 'force-dynamic'
+
 async function getReport(id: string) {
     return await prisma.report.findUnique({
         where: { id },
